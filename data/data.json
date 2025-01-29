@@ -1,0 +1,17 @@
+{
+    "color": "gray",
+    "values": [
+        {
+            "name": "A",
+            "color": "orange"
+        },
+        {
+            "name": "B",
+            "color": "skyblue"
+        },
+        {
+            "name": "C",
+            "color": "darkblue"
+        }
+    ]
+}
