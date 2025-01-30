@@ -163,10 +163,12 @@ class Chart {
             let rectLabels = chart._add('foreignObject.precentage',groupedData)
                                   .attr('width',100)
                                   .attr('height',20)
-                                  .attr('x', d => rectScaleX(d[1].length) + 130)
                                   .attr('y', (d,i) => {return differenaceBetweenContent * i})
                                   .attr("font-family", "Montserrat, sans-serif")
                                   .html(d => `${(Math.ceil((d[1].length / sum) * 1000) / 10).toFixed(2)}%`)
+                                  .transition()
+                                 .duration((d,i) => i * 200)
+                                  .attr('x', d => rectScaleX(d[1].length) + 130)
             console.log(sum)
 
 
