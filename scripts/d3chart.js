@@ -76,16 +76,85 @@ class Chart {
     deleteOrReplaceThisMethod() {
         const { chart, data, chartWidth, chartHeight } = this.getState();
 
-        const line = chart._add('line.mainline','stringData')
-                          .attr('x1',0)
-                          .attr('y1',50)
-                          .attr('x2',chartWidth)
-                          .attr('y2',50)
-                          .attr('stroke','black')
-            
-        line.on('click', d => {
-            console.log(d)
-          })
+        const realData = d3.csv('https://raw.githubusercontent.com/bumbeishvili/tech-survey-data/refs/heads/main/Georgian%20Tech%20Survey%20-%202023%20(Responses)%20-%20Form%20Responses%201.csv').then(realData =>{
+            const data = realData.map( d => {
+                return{
+                    year: 2023,
+                    sex: d.სქესი,
+                    age: d.ასაკი,
+                    experience: d[" სამუშაო გამოცდილება tech სფეროში"],
+                    fromLearningToJobTime: d["თქვენს სფეროში სწავლის დაწყებიდან, რამდენ ხანში დაიწყეთ მუშაობა?"],
+                    devType: d["რომელ კატეგორიას მიეკუთვნებით ყველაზე მეტად?"],
+                    firstLanguage: d["რომელი ენით დაიწყეთ პროგრამირების სწავლა?"],
+                    currentLanguge: d["რომელ პროგრამირების ენას იყენებთ  ამჟამად ძირითადად?"],
+                    mainFramework: d[" რომელ framework-ს იყენებთ ძირითადად?"],
+                    employmenType: d["დასაქმების ტიპი"],
+                    workType: d[" სამუშაოს ტიპი"],
+                    workLanguge: d["სამუშაო ენა"],
+                    employerType: d["ძირითადი დამსაქმებელი ორგანიზაცის საქმიანობის სფერო "],
+                    phyiscalLocation: d["ქვეყანა სადაც ფიზიკურად იმყოფებით"],
+                    monthlyWage: d["საშუალო თვიური შემოსავალი ხელზე ლარებში ბოლო 1 წლის მანძილზე"],
+                    mostWageCameFrom: d["ქვეყანა, საიდანაც ყველაზე მეტი შემოსავალი გაქვთ მიღებული  ბოლო ერთი წლის მანძილზე"],
+                    satisfeidByWork: d["კმაყოფილი ხართ ახლანდელი სამუშაო ადგილით?"],
+                    avarageWorkHourMonthly: d["17. საშუალოდ რამდენ საათს მუშაობთ თვეში (და არა კვირაში!) ?"],
+                    educationLevel: d["განათლების დონე"],
+                    gpa: d["თქვენი GPA უნივერსიტეტში (თუ სწავლობთ ან დამთავრებული გაქვთ)"] 
+                }
+            })
+
+            const filteredData = data.filter(d => d.currentLanguge !== '' && d.currentLanguge !== 'სამსახურში golang+java/kotlin+python+ts+c/c++ stack' && d.currentLanguge !== 'Python, Sql' && d.currentLanguge !== 'Typescript & PHP')
+
+            const groupedData = d3.groups(filteredData, d => d.currentLanguge)
+            .sort(([keyA], [keyB]) => (keyA === "არც ერთს" ? 1 : keyB === "არც ერთს" ? -1 : keyA.localeCompare(keyB)));
+          
+
+            const differenaceBetweenContent = chartHeight / groupedData.length
+
+            let titles = chart._add('foreignObject.mainTitles',groupedData)
+                              .attr('height',50)
+                              .attr('width',100)
+                              .attr('x',10)
+                              .attr('y', (d,i) => {return differenaceBetweenContent * i})
+                              .html( d => `<div class="text-right"> ${d[0]}</div>`)
+
+            const barStartX = 120 
+            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([barStartX,chartWidth -120])
+
+            chart.append('defs')
+                .append('linearGradient')
+                .attr('id', 'blueGreenGradient')
+                .attr('x1', '0%')
+                .attr('y1', '0%')
+                .attr('x2', '100%')
+                .attr('y2', '0%')
+                .append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', '#1E3A8A')  
+                .attr('stop-opacity', 1);
+
+            chart.select('defs')
+                .select('linearGradient')
+                .append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', '#22C55E')  
+                .attr('stop-opacity', 1);
+
+            let rects = chart._add('rect.main-rects',groupedData)
+                             .attr('x',barStartX)
+                             .attr('y', (d,i) => {return differenaceBetweenContent * i})
+                             .attr('height',20)
+                             .attr('fill', 'url(#blueGreenGradient)')
+                             .attr('rx',5)
+                             .attr('ry',5)
+                             .transition()
+                             .duration((d,i) => i * 100)
+                             .attr('width', d => rectScaleX(d[1].length))
+
+
+            console.log(groupedData,)
+
+        })
+
 
     }
 
