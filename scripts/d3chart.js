@@ -76,49 +76,16 @@ class Chart {
     deleteOrReplaceThisMethod() {
         const { chart, data, chartWidth, chartHeight } = this.getState();
 
-        const g = chart._add('g.rect-wrap', data)
-
-        g._add('rect.first')
-            .attr('x', 0)
-            .attr("width", chartWidth / 4)
-            .attr("height", chartHeight)
-            .attr("fill", (d) => d.color)
-            .on('click', (e, d) => {
-                console.log('just rect', d)
-            })
-
-
-        g._add('rect')
-            .attr('x', chartWidth / 4)
-            .attr("width", chartWidth / 4)
-            .attr("height", chartHeight)
-            .attr("fill", (d) => 'blue')
-            .on('click', (e, d) => {
-                console.log('just rect', d)
-            })
-
-        g._add('rect.test', 'sample-rect-custom')
-            .attr('x', chartWidth / 4 * 2)
-            .attr("width", chartWidth / 4)
-            .attr("height", chartHeight)
-            .attr("fill", (d) => 'green')
-            .on('click', (e, d) => {
-                console.log('just rect with string data', d)
-            })
-
-        const rectWrap = g._add('g.element-wrap', d => d.values)
-            .attr('transform', (d, i, arr) => `translate(${chartWidth / 4 * 3 + i * chartWidth / (4 * arr.length)}, 0)`)
-
-        rectWrap._add('rect.bar')
-            .attr('x', (d, i, arr) => 0)
-            .attr("width", (d, i, arr) => chartWidth / (arr.length * 4))
-            .attr("height", chartHeight)
-            .attr("fill", (d) => d.color)
-            .on('click', (e, d) => {
-                console.log('just rect with rect wrap', d)
-            })
-
-
+        const line = chart._add('line.mainline','stringData')
+                          .attr('x1',0)
+                          .attr('y1',50)
+                          .attr('x2',chartWidth)
+                          .attr('y2',50)
+                          .attr('stroke','black')
+            
+        line.on('click', d => {
+            console.log(d)
+          })
 
     }
 

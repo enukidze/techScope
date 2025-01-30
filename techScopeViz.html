@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tech Scope</title>
+    <link rel="shortcut icon" type="image/x-icon" href="techScopeIcon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/index.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+             tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'], // Set Montserrat as the default sans-serif font
+                    },
+                    colors: {
+                        mainWhite: '#C0C0C0',
+                        mainMaroon: '#8F181B',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body translate="no">
+
+    <header class="bg-mainMaroon p-[8px]">
+        <div class="flex justify-between px-24">
+            <div class="text-white"><a href="main.html">Insights</a></div>
+            <div class="text-white"><a href="techScopeViz.html">Explore The Data</a></div>
+        </div>
+    </header>
+
+
+    <div class="page-container">
+        <div id="graph-container"></div>
+    </div>
+
+    <script src="libs/d3.v7.min.js"></script>
+    <script src="scripts/d3chart.js"></script>
+
+    <script>
+        let chart;
+        d3.json('data/data.json')
+            .then(data => {
+                chart = new Chart()
+                    .svgHeight(window.innerHeight - 30)
+                    .svgWidth(window.innerWidth - 30)
+                    .container('#graph-container')
+                    .data(data)
+                    .render()
+            })
+    </script>
+
+</body>
+
+</html>
