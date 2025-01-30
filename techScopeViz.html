@@ -11,15 +11,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-             tailwind.config = {
+               tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Montserrat', 'sans-serif'], // Set Montserrat as the default sans-serif font
+                        sans: ['Montserrat', 'sans-serif'],
                     },
                     colors: {
-                        mainWhite: '#C0C0C0',
-                        mainMaroon: '#8F181B',
+                        // mainWhite: '#C0C0C0',
+                        // mainMaroon: '#8F181B',
+                        // mainGray: '#333333'
+                        mainWhite: '#F8FAFC',
+                        mainMaroon: '#1E3A8A',
+                        mainGray: '#374151',
+                        accent: '#22C55E',
+                        secondary: '#60A5FA'
                     }
                 }
             }
@@ -28,9 +34,8 @@
 </head>
 
 <body translate="no">
-
     <header class="bg-mainMaroon p-[8px]">
-        <div class="flex justify-between px-24">
+        <div class="flex justify-between px-24 font-black text-md">
             <div class="text-white"><a href="main.html">Insights</a></div>
             <div class="text-white"><a href="techScopeViz.html">Explore The Data</a></div>
         </div>
