@@ -6,8 +6,8 @@ class Chart {
             svgWidth: 400,
             svgHeight: 200,
             marginTop: 5,
-            marginBottom: 5,
-            marginRight: 5,
+            marginBottom:25,
+            marginRight: 200,
             marginLeft: 5,
             container: "body",
             defaultTextFill: "#2C3E50",
@@ -103,11 +103,17 @@ class Chart {
             })
 
             const filteredData = data.filter(d => d.currentLanguge !== '' && d.currentLanguge !== 'სამსახურში golang+java/kotlin+python+ts+c/c++ stack' && d.currentLanguge !== 'Python, Sql' && d.currentLanguge !== 'Typescript & PHP')
-
+            console.log(filteredData)
             const groupedData = d3.groups(filteredData, d => d.currentLanguge)
-            .sort(([keyA], [keyB]) => (keyA === "არც ერთს" ? 1 : keyB === "არც ერთს" ? -1 : keyA.localeCompare(keyB)));
-          
-
+            .sort((a, b) => b[1].length - a[1].length)
+            
+            // const legend = chart._add('foreignObject.mainLegend')
+            //                     .attr('height',50)
+            //                     .attr('width',600)
+            //                     .attr('x',(chartWidth/2) - 200)
+            //                     .attr('y',-45)
+            //                     .attr("font-family", "Montserrat, sans-serif")
+            //                     .html(`<div class="text-xl font-bold">Proggraming Languages Used In The Workspace</div>`)
             const differenaceBetweenContent = chartHeight / groupedData.length
 
             let titles = chart._add('foreignObject.mainTitles',groupedData)
@@ -115,10 +121,11 @@ class Chart {
                               .attr('width',100)
                               .attr('x',10)
                               .attr('y', (d,i) => {return differenaceBetweenContent * i})
-                              .html( d => `<div class="text-right"> ${d[0]}</div>`)
+                              .attr("font-family", "Montserrat, sans-serif")
+                              .html( d => `<div class="text-right"> ${d[0] == 'არც ერთს' ? 'None'  : d[0]}</div>`)
 
             const barStartX = 120 
-            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([barStartX,chartWidth -120])
+            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([barStartX,chartWidth])
 
             chart.append('defs')
                 .append('linearGradient')
@@ -147,11 +154,21 @@ class Chart {
                              .attr('rx',5)
                              .attr('ry',5)
                              .transition()
-                             .duration((d,i) => i * 100)
+                             .duration((d,i) => i * 200)
                              .attr('width', d => rectScaleX(d[1].length))
 
 
-            console.log(groupedData,)
+            const sum = d3.sum(groupedData, d => d[1].length)
+            
+            let rectLabels = chart._add('foreignObject.precentage',groupedData)
+                                  .attr('width',100)
+                                  .attr('height',20)
+                                  .attr('x', d => rectScaleX(d[1].length) + 130)
+                                  .attr('y', (d,i) => {return differenaceBetweenContent * i})
+                                  .attr("font-family", "Montserrat, sans-serif")
+                                  .html(d => `${(Math.ceil((d[1].length / sum) * 1000) / 10).toFixed(2)}%`)
+            console.log(sum)
+
 
         })
 
