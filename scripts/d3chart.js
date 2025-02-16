@@ -4,9 +4,9 @@ class Chart {
         const attrs = {
             id: "ID" + Math.floor(Math.random() * 1000000),
             svgWidth: 400,
-            svgHeight: 200,
+            svgHeight: 10,
             marginTop: 5,
-            marginBottom:25,
+            marginBottom: 25,
             marginRight: 200,
             marginLeft: 5,
             container: "body",
@@ -70,15 +70,24 @@ class Chart {
         const chartWidth = svgWidth - marginRight - calc.chartLeftMargin;
         const chartHeight = svgHeight - marginBottom - calc.chartTopMargin;
 
-        this.setState({ calc, chartWidth, chartHeight });
+        this.setState({
+            calc,
+            chartWidth,
+            chartHeight
+        });
     }
 
     deleteOrReplaceThisMethod() {
-        const { chart, data, chartWidth, chartHeight } = this.getState();
+        const {
+            chart,
+            data,
+            chartWidth,
+            chartHeight
+        } = this.getState();
 
-        const realData = d3.csv('https://raw.githubusercontent.com/bumbeishvili/tech-survey-data/refs/heads/main/Georgian%20Tech%20Survey%20-%202023%20(Responses)%20-%20Form%20Responses%201.csv').then(realData =>{
-            const data = realData.map( d => {
-                return{
+        const realData = d3.csv('https://raw.githubusercontent.com/bumbeishvili/tech-survey-data/refs/heads/main/Georgian%20Tech%20Survey%20-%202023%20(Responses)%20-%20Form%20Responses%201.csv').then(realData => {
+            const data = realData.map(d => {
+                return {
                     year: 2023,
                     sex: d.სქესი,
                     age: d.ასაკი,
@@ -98,34 +107,28 @@ class Chart {
                     satisfeidByWork: d["კმაყოფილი ხართ ახლანდელი სამუშაო ადგილით?"],
                     avarageWorkHourMonthly: d["17. საშუალოდ რამდენ საათს მუშაობთ თვეში (და არა კვირაში!) ?"],
                     educationLevel: d["განათლების დონე"],
-                    gpa: d["თქვენი GPA უნივერსიტეტში (თუ სწავლობთ ან დამთავრებული გაქვთ)"] 
+                    gpa: d["თქვენი GPA უნივერსიტეტში (თუ სწავლობთ ან დამთავრებული გაქვთ)"]
                 }
             })
 
             const filteredData = data.filter(d => d.currentLanguge !== '' && d.currentLanguge !== 'სამსახურში golang+java/kotlin+python+ts+c/c++ stack' && d.currentLanguge !== 'Python, Sql' && d.currentLanguge !== 'Typescript & PHP')
             console.log(filteredData)
             const groupedData = d3.groups(filteredData, d => d.currentLanguge)
-            .sort((a, b) => b[1].length - a[1].length)
-            
-            // const legend = chart._add('foreignObject.mainLegend')
-            //                     .attr('height',50)
-            //                     .attr('width',600)
-            //                     .attr('x',(chartWidth/2) - 200)
-            //                     .attr('y',-45)
-            //                     .attr("font-family", "Montserrat, sans-serif")
-            //                     .html(`<div class="text-xl font-bold">Proggraming Languages Used In The Workspace</div>`)
+                .sort((a, b) => b[1].length - a[1].length)
+
             const differenaceBetweenContent = chartHeight / groupedData.length
 
-            let titles = chart._add('foreignObject.mainTitles',groupedData)
-                              .attr('height',50)
-                              .attr('width',100)
-                              .attr('x',10)
-                              .attr('y', (d,i) => {return differenaceBetweenContent * i})
-                              .attr("font-family", "Montserrat, sans-serif")
-                              .html( d => `<div class="text-right"> ${d[0] == 'არც ერთს' ? 'None'  : d[0]}</div>`)
-
-            const barStartX = 120 
-            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([barStartX,chartWidth])
+            let titles = chart._add('foreignObject.mainTitles', groupedData)
+                .attr('height', 50)
+                .attr('width', 100)
+                .attr('x', 10)
+                .attr('y', (d, i) => {
+                    return differenaceBetweenContent * i
+                })
+                .attr("font-family", "Montserrat, sans-serif")
+                .html(d => `<div class="text-right truncate text-sm font-thin"> ${d[0] == 'არც ერთს' ? 'None'  : d[0]}</div>`)
+            const barStartX = 120
+            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([20, chartWidth])
 
             chart.append('defs')
                 .append('linearGradient')
@@ -136,39 +139,47 @@ class Chart {
                 .attr('y2', '0%')
                 .append('stop')
                 .attr('offset', '0%')
-                .attr('stop-color', '#1E3A8A')  
+                .attr('stop-color', '#1E3A8A')
                 .attr('stop-opacity', 1);
 
             chart.select('defs')
                 .select('linearGradient')
                 .append('stop')
                 .attr('offset', '100%')
-                .attr('stop-color', '#22C55E')  
+                .attr('stop-color', '#22C55E')
                 .attr('stop-opacity', 1);
 
-            let rects = chart._add('rect.main-rects',groupedData)
-                             .attr('x',barStartX)
-                             .attr('y', (d,i) => {return differenaceBetweenContent * i})
-                             .attr('height',20)
-                             .attr('fill', 'url(#blueGreenGradient)')
-                             .attr('rx',5)
-                             .attr('ry',5)
-                             .transition()
-                             .duration((d,i) => i * 200)
-                             .attr('width', d => rectScaleX(d[1].length))
+            let rects = chart._add('rect.main-rects', groupedData)
+                .attr('x', barStartX)
+                .attr('y', (d, i) => {
+                    return differenaceBetweenContent * i  + 7
+                })
+                .attr('height',  d => (chartHeight / groupedData.length) / (differenaceBetweenContent / groupedData.length) - 10 )
+                .attr('fill', 'url(#blueGreenGradient)')
+                .attr('rx', 5)
+                .attr('ry', 5)
+                .on('click', function (e, d) {
+
+                })
+                .transition()
+                .duration((d, i) => i * 200)
+                .attr('width', d => rectScaleX(d[1].length))
 
 
             const sum = d3.sum(groupedData, d => d[1].length)
-            
-            let rectLabels = chart._add('foreignObject.precentage',groupedData)
-                                  .attr('width',100)
-                                  .attr('height',20)
-                                  .attr('y', (d,i) => {return differenaceBetweenContent * i})
-                                  .attr("font-family", "Montserrat, sans-serif")
-                                  .html(d => `${(Math.ceil((d[1].length / sum) * 1000) / 10).toFixed(2)}%`)
-                                  .transition()
-                                 .duration((d,i) => i * 200)
-                                  .attr('x', d => rectScaleX(d[1].length) + 130)
+
+            let rectLabels = chart._add('foreignObject.precentage', groupedData)
+                .attr('width', 100)
+                .attr('height', 20)
+                .attr('y', (d, i) => {
+                    return differenaceBetweenContent * i
+                })
+                .attr("font-family", "Montserrat, sans-serif")
+                .html(d => `${(Math.ceil((d[1].length / sum) * 1000) / 10).toFixed(2)}%`)
+                .transition()
+                .duration((d, i) => i * 100)
+                .attr('x', d => rectScaleX(d[1].length) + 130)
+
             console.log(sum)
 
 
@@ -193,6 +204,7 @@ class Chart {
         const svg = d3Container._add('svg.svg-container')
             .attr("width", svgWidth)
             .attr("height", svgHeight)
+            .style("background", "none")
             .attr("font-family", defaultFont);
 
         //Add container g element
@@ -203,7 +215,10 @@ class Chart {
             );
 
 
-        this.setState({ chart, svg });
+        this.setState({
+            chart,
+            svg
+        });
     }
 
     initializeEnterExitUpdatePattern() {
@@ -212,8 +227,8 @@ class Chart {
             const split = classSelector.split(".");
             const elementTag = split[0];
             const className = split[1] || 'not-good';
-            const exitTransition = params?.exitTransition;
-            const enterTransition = params?.enterTransition;
+            const exitTransition = params ?.exitTransition;
+            const enterTransition = params ?.enterTransition;
 
             let bindData = data;
             if (typeof data === 'function') {
@@ -273,6 +288,8 @@ class Chart {
             self.render();
         });
 
-        this.setState({ d3Container });
+        this.setState({
+            d3Container
+        });
     }
 }
