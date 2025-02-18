@@ -70,18 +70,112 @@ class ChartLine {
         const chartWidth = svgWidth - marginRight - calc.chartLeftMargin;
         const chartHeight = svgHeight - marginBottom - calc.chartTopMargin;
 
-        this.setState({ calc, chartWidth, chartHeight });
+        this.setState({
+            calc,
+            chartWidth,
+            chartHeight
+        });
     }
 
     deleteOrReplaceThisMethod() {
-        const { chart, data, chartWidth, chartHeight } = this.getState();
+        const {
+            chart,
+            data,
+            chartWidth,
+            chartHeight
+        } = this.getState();
 
-        const label = chart._add('foreignObject.main-lable')
-                           .attr('width',300)
-                           .attr('height',100)
-                           .attr('x', (chartWidth / 2) - 40)
-                           .attr('y', chartHeight / 2)
-                           .html(`<div class="text-3xl">Line Chart</div>`)
+
+        const realData = d3.csv('https://raw.githubusercontent.com/bumbeishvili/tech-survey-data/refs/heads/main/Georgian%20Tech%20Survey%20-%202023%20(Responses)%20-%20Form%20Responses%201.csv').then(realData => {
+            const data = realData.map(d => {
+                return {
+                    year: 2023,
+                    sex: d.სქესი,
+                    age: d.ასაკი,
+                    experience: d[" სამუშაო გამოცდილება tech სფეროში"],
+                    fromLearningToJobTime: d["თქვენს სფეროში სწავლის დაწყებიდან, რამდენ ხანში დაიწყეთ მუშაობა?"],
+                    devType: d["რომელ კატეგორიას მიეკუთვნებით ყველაზე მეტად?"],
+                    firstLanguage: d["რომელი ენით დაიწყეთ პროგრამირების სწავლა?"],
+                    currentLanguge: d["რომელ პროგრამირების ენას იყენებთ  ამჟამად ძირითადად?"],
+                    mainFramework: d[" რომელ framework-ს იყენებთ ძირითადად?"],
+                    employmenType: d["დასაქმების ტიპი"],
+                    workType: d[" სამუშაოს ტიპი"],
+                    workLanguge: d["სამუშაო ენა"],
+                    employerType: d["ძირითადი დამსაქმებელი ორგანიზაცის საქმიანობის სფერო "],
+                    phyiscalLocation: d["ქვეყანა სადაც ფიზიკურად იმყოფებით"],
+                    monthlyWage: d["საშუალო თვიური შემოსავალი ხელზე ლარებში ბოლო 1 წლის მანძილზე"],
+                    mostWageCameFrom: d["ქვეყანა, საიდანაც ყველაზე მეტი შემოსავალი გაქვთ მიღებული  ბოლო ერთი წლის მანძილზე"],
+                    satisfeidByWork: d["კმაყოფილი ხართ ახლანდელი სამუშაო ადგილით?"],
+                    avarageWorkHourMonthly: d["17. საშუალოდ რამდენ საათს მუშაობთ თვეში (და არა კვირაში!) ?"],
+                    educationLevel: d["განათლების დონე"],
+                    gpa: d["თქვენი GPA უნივერსიტეტში (თუ სწავლობთ ან დამთავრებული გაქვთ)"],
+                }
+            })
+
+            const groupedData = d3.groups(data, d => d.satisfeidByWork).filter(d => d[0] =='კი' || d[0] == 'არა' )
+
+            const colorScale = d3.scaleLinear()
+            .domain([d3.min(groupedData, d => d[1].length), d3.max(groupedData, d => d[1].length)])  // Use a domain between 0 and 1
+            .range(['#1E3A8A', '#22C55E']) 
+
+            const pieData = groupedData.map(d => {
+                return {
+                    name: d[0],
+                    value: d[1].length,
+                    color: colorScale(d[1].length)
+                }
+            })
+
+    
+
+            const radius = Math.min(chartWidth, chartHeight) / 3;
+            const pie = d3.pie().value(d => d.value).sort(null)
+            const arc = d3.arc().innerRadius(0).outerRadius(radius);
+            const arcs = pie(pieData)
+
+            chart._add('path.pieSlice', arcs)
+            .attr("d", arc)
+            .attr('transform', `translate(${chartWidth / 2},${chartHeight/2})`)
+            .attr("fill", (d) => d.data.color)
+            .attr('stroke', 'black')
+
+
+            chart._add('foreignObject.PieText',arcs)
+            .attr('width',50)
+            .attr('height',50)
+            .attr('transform', (d) => {
+                const [x, y] = arc.centroid(d);
+                console.log(x, y)
+                return `translate(${x + chartWidth /2}, ${y + chartHeight / 2} )`;
+            })
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('font-size', '14px')
+            .attr('text-color','white')
+            .html(d =>`<div class="text-white"> ${d.data.value}% </div>`);
+
+
+            const textLabels = chart._add('foreignObject.data-text',arcs)
+            .attr('transform', function (d) {
+                const [x, y] = arc.centroid(d);
+                const radius = Math.sqrt(x * x + y * y); 
+                const angle = Math.atan2(y, x); 
+                const offset = radius * 1.4; 
+                const newX = x * (1 + offset / radius) ;
+                const newY = y * (1 + offset / radius) ;
+
+                return `translate(${chartWidth / 2 + newX}, ${ chartHeight / 2 +newY})`;
+            })
+            .attr('width',120)
+            .attr('height',50)
+            .html(d => `<div class="text-black text-lg"">${d.data.name}</div>`)
+
+            console.log(arcs)
+          
+
+
+        })
+
 
 
 
@@ -114,7 +208,10 @@ class ChartLine {
             );
 
 
-        this.setState({ chart, svg });
+        this.setState({
+            chart,
+            svg
+        });
     }
 
     initializeEnterExitUpdatePattern() {
@@ -123,8 +220,8 @@ class ChartLine {
             const split = classSelector.split(".");
             const elementTag = split[0];
             const className = split[1] || 'not-good';
-            const exitTransition = params?.exitTransition;
-            const enterTransition = params?.enterTransition;
+            const exitTransition = params ?.exitTransition;
+            const enterTransition = params ?.enterTransition;
 
             let bindData = data;
             if (typeof data === 'function') {
@@ -184,6 +281,8 @@ class ChartLine {
             self.render();
         });
 
-        this.setState({ d3Container });
+        this.setState({
+            d3Container
+        });
     }
 }

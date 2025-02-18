@@ -11,7 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -43,12 +45,13 @@
         </div>
     </header>
 
+    <div class="absolute z-10 right-10 top-20 opacity-25">Map visualizes countries that the participants of the survey recieve the most amount of income from</div>
     <div class="page-container flex flex-col relative">
-
-        <div id="map-container" class="w-full h-screen z-0"></div>
-        <div class="absolute bottom-0 flex flex-row w-full ">
-            <div id="barChart-container" class="w-1/4"></div>
-            <div id="spiderChart-container" class="w-1/4"></div>
+        <div id="map-container" class="w-full h-screen z-0">
+        </div>
+        <div class="absolute bottom-0 flex flex-row w-full">
+            <div id="barChart-container" class="w-1/4 "></div>
+            <div id="treemap-container" class="w-1/4"></div>
             <div id="packChart-container" class="w-1/4"></div>
             <div id="lineChart-container" class="w-1/4"></div>
         </div>
@@ -56,11 +59,14 @@
     </div>
 
 
+
     <script src="libs/d3.v7.min.js"></script>
     <script src="scripts/d3chart.js"></script>
     <script src="scripts/d3map.js"></script>
-    <script src="scripts/d3spiderChart.js"></script>
     <script src="scripts/d3packChart.js"></script>
+    <script src="scripts/d3treemapChart.js"></script>
+    <script src="scripts/d3lineChart.js"></script>
+
 
 
     <script>
@@ -79,7 +85,7 @@
         d3.json('data/data.json')
             .then(data => {
                 mapChart = new ChartMap()
-                    .svgHeight(window.innerHeight - 0)
+                    .svgHeight(window.innerHeight +0)
                     .svgWidth(window.innerWidth )
                     .container('#map-container')
                     .data(data)
@@ -87,13 +93,13 @@
             })
 
 
-        let spiderChart;
+        let treemapChart;
         d3.json('data/data.json')
             .then(data => {
-                spiderChart = new ChartSpider()
+                treemapChart = new ChartTreemap()
                     .svgHeight(window.innerHeight - 430)
                     .svgWidth(window.innerWidth - 30)
-                    .container('#packChart-container')
+                    .container('#treemap-container')
                     .data(data)
                     .render()
             })
@@ -105,7 +111,7 @@
                 packChart = new ChartPack()
                     .svgHeight(window.innerHeight - 430)
                     .svgWidth(window.innerWidth - 30)
-                    .container('#spiderChart-container')
+                    .container('#packChart-container')
                     .data(data)
                     .render()
             })
@@ -113,7 +119,7 @@
         let lineChart;
         d3.json('data/data.json')
             .then(data => {
-                lineChart = new ChartPack()
+                lineChart = new ChartLine()
                     .svgHeight(window.innerHeight - 430)
                     .svgWidth(window.innerWidth - 30)
                     .container('#lineChart-container')
@@ -122,6 +128,13 @@
             })
 
     </script>
+
+    <style>
+    .maplibregl-popup .maplibregl-popup-close-button {
+    margin-right: 5px;
+  
+}
+    </style>
 
 </body>
 

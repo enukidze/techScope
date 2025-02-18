@@ -1,13 +1,13 @@
-class Chart {
+class ChartTreemap {
     constructor() {
         // Defining state attributes
         const attrs = {
             id: "ID" + Math.floor(Math.random() * 1000000),
             svgWidth: 400,
-            svgHeight: 10,
+            svgHeight: 200,
             marginTop: 5,
-            marginBottom: 25,
-            marginRight: 200,
+            marginBottom: 5,
+            marginRight: 5,
             marginLeft: 5,
             container: "body",
             defaultTextFill: "#2C3E50",
@@ -85,6 +85,12 @@ class Chart {
             chartHeight
         } = this.getState();
 
+        // const label = chart._add('foreignObject.main-lable')
+        //     .attr('width', 300)
+        //     .attr('height', 100)
+        //     .attr('x', (chartWidth / 2) - 40)
+        //     .attr('y', chartHeight / 2)
+        //     .html(`<div class="text-3xl">Spider Chart</div>`)
         const realData = d3.csv('https://raw.githubusercontent.com/bumbeishvili/tech-survey-data/refs/heads/main/Georgian%20Tech%20Survey%20-%202023%20(Responses)%20-%20Form%20Responses%201.csv').then(realData => {
             const data = realData.map(d => {
                 return {
@@ -111,78 +117,56 @@ class Chart {
                 }
             })
 
-            const filteredData = data.filter(d => d.currentLanguge !== '' && d.currentLanguge !== 'სამსახურში golang+java/kotlin+python+ts+c/c++ stack' && d.currentLanguge !== 'Python, Sql' && d.currentLanguge !== 'Typescript & PHP')
-            const groupedData = d3.groups(filteredData, d => d.currentLanguge)
-                .sort((a, b) => b[1].length - a[1].length)
+            const groupedData = d3.groups(data, d => d.devType).filter(d => d[0] != '')
 
-            const differenaceBetweenContent = chartHeight / groupedData.length
+            const formattedData = {
+                name: "root",
+                children: groupedData.map(d => ({
+                    name: d[0],
+                    value: d[1].length // Use the array’s length as the value
+                }))
+            };
 
-            let titles = chart._add('foreignObject.mainTitles', groupedData)
-                .attr('height', 50)
-                .attr('width', 100)
-                .attr('x', 10)
-                .attr('y', (d, i) => {
-                    return differenaceBetweenContent * i
-                })
-                .attr("font-family", "Montserrat, sans-serif")
-                .html(d => `<div class="text-right truncate text-sm font-thin"> ${d[0] == 'არც ერთს' ? 'None'  : d[0]}</div>`)
-            const barStartX = 120
-            const rectScaleX = d3.scaleLinear().domain([d3.min(groupedData, d => d[1].length),d3.max(groupedData, d => d[1].length)]).range([20, chartWidth])
+            const colorScale = d3.scaleLinear()
+                .domain([d3.min(formattedData.children, d => d.value) , d3.max(formattedData.children, d => d.value)])
+                .range(['#1E3A8A', '#22C55E'])
 
-            chart.append('defs')
-                .append('linearGradient')
-                .attr('id', 'blueGreenGradient')
-                .attr('x1', '0%')
-                .attr('y1', '0%')
-                .attr('x2', '100%')
-                .attr('y2', '0%')
-                .append('stop')
-                .attr('offset', '0%')
-                .attr('stop-color', '#1E3A8A')
-                .attr('stop-opacity', 1);
 
-            chart.select('defs')
-                .select('linearGradient')
-                .append('stop')
-                .attr('offset', '100%')
-                .attr('stop-color', '#22C55E')
-                .attr('stop-opacity', 1);
+            const treemapFunc = d3.treemap().size([chartWidth, chartHeight]).padding(1)
 
-            let rects = chart._add('rect.main-rects', groupedData)
-                .attr('x', barStartX)
-                .attr('y', (d, i) => {
-                    return differenaceBetweenContent * i  + 7
-                })
-                .attr('height',  d => (chartHeight / groupedData.length) / (differenaceBetweenContent / groupedData.length) - 10 )
-                .attr('fill', 'url(#blueGreenGradient)')
-                .attr('rx', 5)
-                .attr('ry', 5)
-                .on('click', function (e, d) {
 
-                })
+            const root = d3.hierarchy(formattedData).sum(d => d.value).sort((a, b) => b.value - a.value);
+
+            const treeMap = treemapFunc(root)
+
+
+            const rects = chart._add('rect.treemap-rects', treeMap.leaves())
+                .attr("fill", (d, i) => colorScale(d.value)) // Use D3 color scale
+                .attr("stroke", "white")
                 .transition()
-                .duration((d, i) => i * 200)
-                .attr('width', d => rectScaleX(d[1].length))
+                .duration((d,i) => i * 100)
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
 
 
-            const sum = d3.sum(groupedData, d => d[1].length)
 
-            let rectLabels = chart._add('foreignObject.precentage', groupedData)
-                .attr('width', 100)
-                .attr('height', 20)
-                .attr('y', (d, i) => {
-                    return differenaceBetweenContent * i
-                })
-                .attr("font-family", "Montserrat, sans-serif")
-                .html(d => `${(Math.ceil((d[1].length / sum) * 1000) / 10).toFixed(2)}%`)
-                .transition()
-                .duration((d, i) => i * 100)
-                .attr('x', d => rectScaleX(d[1].length) + 130)
+            const labels = chart._add('foreignObject.treemap-labels', treeMap.leaves())
+            .style("pointer-events", "none")
+            .html(d => `<div class="text-white font-bold ${d.value > 5 ? 'p-1 text-xs text-left' : 'text-[6px] font-light'}">${d.data.name} ${d.data.value} </div>`)
+            .transition()
+                .duration((d,i) => i * 100)
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("width", d => d.x1 - d.x0)
+                .attr("height", d => d.y1 - d.y0)
 
-            console.log(sum)
-
-
+            console.log(treeMap.leaves())
         })
+
+
+
 
 
     }
@@ -203,7 +187,7 @@ class Chart {
         const svg = d3Container._add('svg.svg-container')
             .attr("width", svgWidth)
             .attr("height", svgHeight)
-            .style("background-color", "rgba(255,255,255,0)") 
+            .style("background", "none")
             .attr("font-family", defaultFont);
 
         //Add container g element
